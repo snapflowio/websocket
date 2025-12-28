@@ -29,5 +29,6 @@ func (n *HandlerNode) tryMatch(ctx *Context) bool {
 	if n.Pattern == nil {
 		return true
 	}
+
 	return n.Pattern.Match(ctx.Event())
 }

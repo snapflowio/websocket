@@ -1,8 +1,9 @@
 package websocket
 
 import (
-	"github.com/grafana/regexp"
 	"strings"
+
+	"github.com/grafana/regexp"
 )
 
 type Pattern struct {
@@ -16,19 +17,23 @@ func NewPattern(patternStr string) (*Pattern, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	patternRegExp, err := regExpFromChunks(chunks)
 	if err != nil {
 		return nil, err
 	}
+
 	return &Pattern{
 		str:    patternStr,
 		chunks: chunks,
 		regExp: patternRegExp,
 	}, nil
 }
+
 func (p *Pattern) Match(event string) bool {
 	return p.regExp.MatchString(event)
 }
+
 func (p *Pattern) String() string {
 	return p.str
 }
@@ -61,42 +66,50 @@ type chunk struct {
 func parsePatternChunks(patternStr string) ([]chunk, error) {
 	parts := strings.Split(patternStr, ".")
 	chunks := make([]chunk, 0, len(parts))
+
 	for _, part := range parts {
 		if part == "" {
 			continue
 		}
 		ch := chunk{kind: static, modifier: single}
-		if part == "*" {
+		switch part {
+		case "*":
 			ch.kind = wildcard
 			ch.modifier = single
 			ch.pattern = "[^.]+"
-		} else if part == "**" {
+		case "**":
 			ch.kind = wildcard
 			ch.modifier = zeroOrMore
 			ch.pattern = ".*"
-		} else {
+		default:
 			ch.pattern = regexp.QuoteMeta(part)
 		}
+
 		chunks = append(chunks, ch)
 	}
+
 	return chunks, nil
 }
+
 func regExpFromChunks(chunks []chunk) (*regexp.Regexp, error) {
 	if len(chunks) == 0 {
 		return regexp.Compile("^$")
 	}
-	regExpStr := "^"
+
+	var regExpStr strings.Builder
+	regExpStr.WriteString("^")
 	for i, currentChunk := range chunks {
 		if i > 0 {
-			regExpStr += "\\."
+			regExpStr.WriteString("\\.")
 		}
 		switch currentChunk.modifier {
 		case single:
-			regExpStr += currentChunk.pattern
+			regExpStr.WriteString(currentChunk.pattern)
 		case zeroOrMore:
-			regExpStr += currentChunk.pattern
+			regExpStr.WriteString(currentChunk.pattern)
 		}
 	}
-	regExpStr += "$"
-	return regexp.Compile(regExpStr)
+
+	regExpStr.WriteString("$")
+	return regexp.Compile(regExpStr.String())
 }

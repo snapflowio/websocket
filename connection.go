@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"context"
+
 	"github.com/coder/websocket"
 )
 
@@ -34,6 +35,7 @@ func NewWebSocketConnection(conn *websocket.Conn) *WebSocketConnection {
 		conn: conn,
 	}
 }
+
 func (c *WebSocketConnection) Read(ctx context.Context) (*SocketMessage, error) {
 	messageType, data, err := c.conn.Read(ctx)
 	if err != nil {
@@ -44,9 +46,11 @@ func (c *WebSocketConnection) Read(ctx context.Context) (*SocketMessage, error) 
 		RawData: data,
 	}, nil
 }
+
 func (c *WebSocketConnection) Write(ctx context.Context, msg *SocketMessage) error {
 	return c.conn.Write(ctx, msg.Type, msg.Data)
 }
+
 func (c *WebSocketConnection) Close(status Status, reason string) error {
 	return c.conn.Close(websocket.StatusCode(status), reason)
 }

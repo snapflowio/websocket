@@ -34,6 +34,7 @@ func (m *InboundMessage) free() {
 }
 
 type OutboundMessage struct {
-	ID   string
-	Data any
+	ID    string
+	Event string
+	Data  any
 }

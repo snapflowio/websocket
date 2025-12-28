@@ -36,6 +36,7 @@ type InvalidPatternError struct {
 func (e *InvalidPatternError) Error() string {
 	return fmt.Sprintf("invalid event pattern %q: %v", e.Pattern, e.Reason)
 }
+
 func (e *InvalidPatternError) Unwrap() error {
 	return e.Reason
 }

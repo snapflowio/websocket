@@ -13,14 +13,17 @@ func (c *Context) Next() {
 	if c.Error != nil || (!isCloseHandler && c.socket.IsClosed()) {
 		return
 	}
+
 	if c.message.hasSetID {
 		interceptorChan, ok := c.socket.GetInterceptor(c.message.ID)
 		if ok {
 			interceptorChan <- c.message
 			return
 		}
+
 		c.message.hasSetID = false
 	}
+
 	if c.message.hasSetEvent {
 		if c.currentHandlerNodeMatches && !c.currentHandlerNode.tryMatch(c) {
 			c.currentHandlerNode = c.currentHandlerNode.Next
@@ -28,8 +31,10 @@ func (c *Context) Next() {
 			c.currentHandlerIndex = 0
 			c.currentHandler = nil
 		}
+
 		c.message.hasSetEvent = false
 	}
+
 	for c.currentHandlerNode != nil {
 		if !c.currentHandlerNodeMatches {
 			for c.currentHandlerNode != nil {
@@ -37,6 +42,7 @@ func (c *Context) Next() {
 					c.currentHandlerNodeMatches = true
 					break
 				}
+
 				c.currentHandlerNode = c.currentHandlerNode.Next
 			}
 			if !c.currentHandlerNodeMatches {
@@ -53,9 +59,11 @@ func (c *Context) Next() {
 		c.currentHandlerIndex = 0
 		c.currentHandler = nil
 	}
+
 	if c.currentHandler == nil {
 		return
 	}
+
 	bindType := c.currentHandlerNode.BindType
 	if currentHandler, ok := c.currentHandler.(OpenHandler); ok && bindType == OpenBindType {
 		execWithCtxRecovery(c, func() {
@@ -80,14 +88,17 @@ func (c *Context) Next() {
 	} else {
 		panic(fmt.Sprintf("Unknown handler type: %s", reflect.TypeOf(c.currentHandler)))
 	}
+
 	if (bindType == OpenBindType && !c.socket.IsClosed()) || bindType == CloseBindType {
 		c.Next()
 	}
+
 	c.currentHandlerNode = nil
 	c.currentHandlerNodeMatches = false
 	c.currentHandlerIndex = 0
 	c.currentHandler = nil
 }
+
 func execWithCtxRecovery(ctx *Context, fn func()) {
 	defer func() {
 		if maybeErr := recover(); maybeErr != nil {
@@ -96,10 +107,12 @@ func execWithCtxRecovery(ctx *Context, fn func()) {
 			} else {
 				ctx.Error = fmt.Errorf("%s", maybeErr)
 			}
+
 			stack := string(debug.Stack())
 			stackLines := strings.Split(stack, "\n")
 			ctx.ErrorStack = strings.Join(stackLines[6:], "\n")
 		}
 	}()
+
 	fn()
 }
