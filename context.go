@@ -233,6 +233,24 @@ func (c *Context) Headers() http.Header {
 	return c.socket.Headers()
 }
 
+// QueryParam returns the value of a query parameter from the WebSocket connection URL
+func (c *Context) QueryParam(key string) string {
+	if c.socket == nil {
+		return ""
+	}
+
+	return c.socket.QueryParam(key)
+}
+
+// QueryParams returns all query parameters from the WebSocket connection URL
+func (c *Context) QueryParams() map[string]string {
+	if c.socket == nil {
+		return nil
+	}
+
+	return c.socket.QueryParams()
+}
+
 func (c *Context) RemoteAddr() string {
 	if c.socket == nil {
 		return ""

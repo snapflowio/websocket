@@ -65,6 +65,24 @@ func (s *Socket) Headers() http.Header {
 	return http.Header{}
 }
 
+// QueryParam returns the value of a query parameter from the WebSocket connection URL
+func (s *Socket) QueryParam(key string) string {
+	if s.connectionInfo != nil && s.connectionInfo.Query != nil {
+		return s.connectionInfo.Query[key]
+	}
+
+	return ""
+}
+
+// QueryParams returns all query parameters from the WebSocket connection URL
+func (s *Socket) QueryParams() map[string]string {
+	if s.connectionInfo != nil && s.connectionInfo.Query != nil {
+		return s.connectionInfo.Query
+	}
+
+	return make(map[string]string)
+}
+
 func (s *Socket) RemoteAddr() string {
 	if s.connectionInfo != nil {
 		return s.connectionInfo.RemoteAddr

@@ -60,6 +60,7 @@ func (s *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 type ConnectionInfo struct {
 	RemoteAddr string
 	Headers    http.Header
+	Query      map[string]string // Query parameters from the connection URL
 }
 
 func (s *Server) HandleConnection(info *ConnectionInfo, connection SocketConnection) {
@@ -233,9 +234,18 @@ func (s *Server) handleWebsocketConnection(res http.ResponseWriter, req *http.Re
 		return
 	}
 
+	// Extract query parameters
+	queryParams := make(map[string]string)
+	for key, values := range req.URL.Query() {
+		if len(values) > 0 {
+			queryParams[key] = values[0] // Take first value if multiple
+		}
+	}
+
 	info := &ConnectionInfo{
 		RemoteAddr: req.RemoteAddr,
 		Headers:    req.Header,
+		Query:      queryParams,
 	}
 
 	socket := NewSocket(info, NewWebSocketConnection(conn))
